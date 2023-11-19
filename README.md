@@ -1,5 +1,8 @@
 ## Digital diary
 
+* create_tables.sql contains script for creating tables (DB: PostgreSQL)
+* .png files contain screenshots of tables with sample data
+
 ### Users table:
 * UserID (primary key)
 * Name : _str_
