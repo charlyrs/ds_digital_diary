@@ -16,9 +16,14 @@ engine = create_engine(
 )
 
 st.header("Хомякова Лилия Сергеевна, 4 группа, 4 курс")
-mapper = {"Users": "Users", "Diary Entries": "DiaryEntries"}
-table = st.selectbox("Select table", options=mapper.keys())
-df = pd.read_sql_query(f"select * from {mapper[table]}", con=engine)
+tables = pd.read_sql_query("""SELECT table_name
+  FROM information_schema.tables
+ WHERE table_schema='public'
+   AND table_type='BASE TABLE';
+""", con=engine)
+tables = [t for t in tables["table_name"].tolist() if t != "temp_table"]
+table = st.selectbox("Select table", options=tables)
+df = pd.read_sql_query(f"select * from {table}", con=engine)
 df = df.set_index(df.columns[0], drop=True)
 pddict = {}
 for col, dtype in df.dtypes.items():
@@ -59,11 +64,11 @@ if st.button("Change data"):
         if len(edited_rows) > 0:
             edited_rows.to_sql('temp_table', engine, if_exists='replace')
             for col in edited_rows.columns:
-                sql = f"UPDATE {mapper[table]} AS f SET {col} = t.{col} FROM temp_table AS t WHERE f.{id_col} = t.{id_col}"
+                sql = f"UPDATE {table} AS f SET {col} = t.{col} FROM temp_table AS t WHERE f.{id_col} = t.{id_col}"
                 conn.execute(text(sql))
         if len(added) > 0:
             added.to_sql('temp_table', engine, if_exists='replace')
-            sql = f"INSERT INTO {mapper[table]} (SELECT * FROM temp_table)"
+            sql = f"INSERT INTO {table} (SELECT * FROM temp_table)"
             conn.execute(text(sql))
     st.write("Done")
 
