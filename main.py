@@ -13,18 +13,6 @@ class user_class:
     def __str__(self):
         return self.name
 
-def make_unique(strings):
-    d = {}
-    for s in strings:
-        d[s] = d.get(s, 0) + 1
-    res = []
-    for s in strings:
-        if d[s] == 1:
-            res.append(s)
-        else:
-            res.append(s+"_"+str(d[s]-1))
-            d[s] = d[s] - 1
-    return res
 
 st.set_page_config(layout="wide")
 values = dotenv_values()
@@ -90,9 +78,7 @@ if st.button("Edit data"):
         if table != "users": edited = edited.drop(["change_user", "user_name"], axis=1)
         edited_rows = edited[(df[~df["delete"]] != edited).sum(axis=1) > 0]
         if len(edited_rows) > 0:
-            print("EDIT")
             edited_rows.to_sql('temp_table', engine, if_exists='replace')
-            print(edited_rows)
             for col in edited_rows.columns:
                 sql = f"UPDATE {table} AS f SET {col} = t.{col} FROM temp_table AS t WHERE f.{id_col} = t.{id_col}"
                 conn.execute(text(sql))
